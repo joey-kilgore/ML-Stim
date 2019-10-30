@@ -2,13 +2,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "ML.h"
+#include "FeedbackNN.h"
+#include <time.h>
 
 void testNet();
 void testEnv();
+void testFeedback();
 
 int main(){
-    testNet();
-    testEnv();
+    srand(time(0));
+    //testNet();
+    //testEnv();
+    testFeedback();
 }
 
 void testNet(){
@@ -68,4 +73,12 @@ void testEnv(){
     }
     printf("WRITING TO FILE");
     writeToFile(data, "output.csv");
+}
+
+void testFeedback(){
+    FBNN* net = initNet();
+    for(int testNum=0; testNum<10; testNum++){
+        float* out = calcOutput(net);
+        printf("OUTPUT %d: %f\n", testNum, out[0]);
+    }
 }

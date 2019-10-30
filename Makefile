@@ -4,8 +4,8 @@ all: ./bin/controller.exe ./bin/test.exe
 ./bin/controller.exe: Controller.o Sim.o ML.o -lm
 	gcc -g -o ./bin/controller.exe -fopenmp Controller.o Sim.o ML.o -lm
 
-./bin/test.exe: test.o Sim.o ML.o
-	gcc -g -o ./bin/test.exe test.o Sim.o ML.o -lm
+./bin/test.exe: test.o Sim.o ML.o FeedbackNN.o
+	gcc -g -o ./bin/test.exe test.o Sim.o ML.o FeedbackNN.o -lm
 
 test.o: ./src/test.c ./src/Sim.h
 	gcc -c -g ./src/test.c
@@ -18,3 +18,6 @@ ML.o: ./src/ML.c ./src/ML.h
 
 Controller.o : ./src/Controller.c ./src/Sim.h ./src/ML.h
 	gcc -c -g -fopenmp ./src/Controller.c -lm
+
+FeedbackNN.o: ./src/FeedbackNN.c ./src/FeedbackNN.h ./src/MathUtil.c
+	gcc -c -g ./src/FeedbackNN.c -lm
