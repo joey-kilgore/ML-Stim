@@ -1,23 +1,31 @@
-all: ./bin/controller.exe ./bin/test.exe
+CFLAGS = -g -lm -pedantic
+
+all: ./bin/controller.exe ./bin/test.exe ./bin/TestFeedback.exe
 	rm *.o
 
 ./bin/controller.exe: Controller.o Sim.o ML.o -lm
-	gcc -g -o ./bin/controller.exe -fopenmp Controller.o Sim.o ML.o -lm
+	gcc -o ./bin/controller.exe -fopenmp Controller.o Sim.o ML.o $(CFLAGS)
 
 ./bin/test.exe: test.o Sim.o ML.o FeedbackNN.o
-	gcc -g -o ./bin/test.exe test.o Sim.o ML.o FeedbackNN.o -lm
+	gcc -o ./bin/test.exe test.o Sim.o ML.o FeedbackNN.o $(CFLAGS)
 
-test.o: ./src/test.c ./src/Sim.h
-	gcc -c -g ./src/test.c
+./bin/TestFeedback.exe: TestFeedback.o Sim.o FeedbackNN.o
+	gcc -o ./bin/TestFeedback.exe TestFeedback.o Sim.o FeedbackNN.o $(CFLAGS)
 
-Sim.o: ./src/Sim.c ./src/Sim.h
-	gcc -c -g ./src/Sim.c -lm
+TestFeedback.o: ./src/TestFeedback.c ./src/Sim.h ./src/FeedbackNN.h ./src/defs.h
+	gcc -c ./src/TestFeedback.c $(CFLAGS)
 
-ML.o: ./src/ML.c ./src/ML.h
-	gcc -c -g ./src/ML.c -lm
+test.o: ./src/test.c ./src/Sim.h ./src/defs.h
+	gcc -c ./src/test.c $(CFLAGS)
 
-Controller.o : ./src/Controller.c ./src/Sim.h ./src/ML.h
-	gcc -c -g -fopenmp ./src/Controller.c -lm
+Sim.o: ./src/Sim.c ./src/Sim.h ./src/defs.h
+	gcc -c ./src/Sim.c $(CFLAGS)
 
-FeedbackNN.o: ./src/FeedbackNN.c ./src/FeedbackNN.h ./src/MathUtil.c
-	gcc -c -g ./src/FeedbackNN.c -lm
+ML.o: ./src/ML.c ./src/ML.h ./src/defs.h
+	gcc -c ./src/ML.c $(CFLAGS)
+
+Controller.o : ./src/Controller.c ./src/Sim.h ./src/ML.h ./src/defs.h
+	gcc -c -fopenmp ./src/Controller.c $(CFLAGS)
+
+FeedbackNN.o: ./src/FeedbackNN.c ./src/FeedbackNN.h ./src/MathUtil.c ./src/defs.h
+	gcc -c ./src/FeedbackNN.c $(CFLAGS)

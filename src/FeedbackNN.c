@@ -2,15 +2,15 @@
 #include <stdlib.h>
 #include "MathUtil.c"
 
-FBNN* initNet(){
+FBNN *initNet(){
     // initNet essentially goes through and sets up each layer
     // Allocating memory for a layer consists of
     //  - setting pointers
     //  - weight, bias, and node arrays
     //  - setting numNodes
     // finally the feeback array needs to be set to zeros
-
-    FBNN* net = (FBNN*)malloc(sizeof(FBNN));
+    FBNN* net;
+    net = (FBNN*)malloc(sizeof(FBNN));
     
     // Setting up input layer
     net->inputLayer = (Layer*)malloc(sizeof(Layer));
@@ -71,6 +71,8 @@ FBNN* initNet(){
     // set the feedback values to 0
     for(int i=0; i<INPUTS-1; i++)
         net->feedback[i] = 0.0f;
+
+    return net;
 }
 
 float* calcOutput(FBNN* net){
@@ -83,7 +85,7 @@ float* calcOutput(FBNN* net){
     for(int i=0; i<INPUTS-1; i++){  // loop and set the feedback values
         *(input->node+i) = net->feedback[i];
     }
-    *(input->node+INPUTS-1) = 0.5f; // Setting the random noise value
+    *(input->node+INPUTS-1) = linearGenerator(); // Setting the random noise value
 
     Layer* curLayer = input;
     Layer* nextLayer = input->nextLayer; // Layer that is being calculated

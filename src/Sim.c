@@ -1,4 +1,5 @@
 // Simulation environment
+#include "defs.h"
 #include "Sim.h"
 #include <math.h>
 #include <stdio.h>
@@ -7,7 +8,7 @@
 #include <fenv.h>
 #include <omp.h>
 
-void takeTimeStep(struct simEnv sim, float dt, float injected[], int rowNum, float data[10000][205])
+void takeTimeStep(struct simEnv sim, float dt, float injected[], int rowNum, float **data)
 {   // Taking a time step requires doing aproximation for all variables governed
     //  by first order ODE's
     // This is done by using backward euler method
@@ -70,7 +71,7 @@ float derivV(float v, float m, float h, float n, float i, float vinCenter, float
 {
     // calculates the voltage derivative given current state values
     //dv/dt=1/cm*(i -          ina                            -       ik                             -     il             +            ileft              +        iright)
-    return 1 * (i - 120.0F * powf(m, 3.0F) * h * (v - 55.17F) - 36.0F * powf(n, 4.0F) * (v + 72.14F) - .3F * (v + 49.42F) + (vinLeft - vinCenter) / 1.0F + (vinRight - vinCenter) / 1.0F);
+    return (i - 120.0F * powf(m, 3.0F) * h * (v - 55.17F) - 36.0F * powf(n, 4.0F) * (v + 72.14F) - .3F * (v + 49.42F) + (vinLeft - vinCenter) / 1.0F + (vinRight - vinCenter) / 1.0F);
 }
 float derivN(float v, float n)
 {
@@ -91,10 +92,10 @@ float derivH(float v, float h)
     return (.07F * expf(-.05F * (v + 65.0F))) * (1.0F - h) - 1.0F / (1.0F + expf(-.1F * (v + 35.0F))) * h;
 }
 
-void writeToFile(float data[10000][205], char* name)
+void writeToFile(float** data, char* name)
 {
     FILE* f = fopen(name, "w");
-    for(int r = 0; r < 10000; r++){
+    for(int r = 0; r < TSTEPS; r++){
         for(int c = 0; c<205; c++){
             fprintf(f, "%.4f,", data[r][c]);
         }

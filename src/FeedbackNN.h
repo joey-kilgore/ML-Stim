@@ -28,5 +28,5 @@ typedef struct FBNN{
     float feedback[INPUTS-1];
 } FBNN;
 
-FBNN* initNet();
+FBNN *initNet();
 float* calcOutput(FBNN* net);

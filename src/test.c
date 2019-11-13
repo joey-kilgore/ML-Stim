@@ -1,3 +1,4 @@
+#include "defs.h"
 #include "Sim.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -36,7 +37,9 @@ void testNet(){
 
 void testEnv(){
     struct simEnv env;
-    float data[10000][205];
+    float **data = (float **)malloc(TSTEPS * sizeof(float *));
+    for(int i=0; i<TSTEPS; i++)
+        data[i] = (float *)malloc(205 * sizeof(float));
 
     for(int i=0; i<51; i++){
         // set initial conditions for each compartment
@@ -76,7 +79,8 @@ void testEnv(){
 }
 
 void testFeedback(){
-    FBNN* net = initNet();
+    FBNN* net;
+    net = initNet();
     for(int testNum=0; testNum<10; testNum++){
         float* out = calcOutput(net);
         printf("OUTPUT %d: %f\n", testNum, out[0]);

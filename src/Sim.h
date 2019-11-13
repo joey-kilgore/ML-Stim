@@ -29,11 +29,11 @@ struct simEnv
     float t;
 };
 
-void takeTimeStep(struct simEnv sim, float dt, float injected[], int rowNum, float data[10000][205]);
+void takeTimeStep(struct simEnv sim, float dt, float injected[], int rowNum, float **data);
 
 float derivV(float v, float m, float h, float n, float i, float vinCenter, float vinLeft, float vinRight);
 float derivN(float v, float n);
 float derivM(float v, float m);
 float derivH(float v, float h);
 
-void writeToFile(float data[10000][205], char* name);
+void writeToFile(float** data, char* name);

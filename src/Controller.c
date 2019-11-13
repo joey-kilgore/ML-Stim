@@ -8,7 +8,7 @@
 // Adam Savel
 // Brian Xiong
 // During PittChallenge 2019
-
+#include "defs.h"
 #include "Sim.h"
 #include "ML.h"
 #include <stdbool.h>
@@ -18,14 +18,18 @@
 
 #define genSize 300
 
-double testNetwork(NeuralNetwork *NN, float data[10000][205]);
+double testNetwork(NeuralNetwork *NN, float **data);
 
 int main()
 {
     printf("WORK\n");
     // Welcome to our main!
     //
-    float data[10000][205];
+    float **data = (float **)malloc(TSTEPS * sizeof(float *));
+    for (int i = 0; i < TSTEPS; i++)
+    {
+        data[i] = (float *)malloc(205 * sizeof(float));
+    }
 
     NeuralNetwork gen[genSize];
     for (int i = 0; i < genSize; i++)
@@ -36,7 +40,7 @@ int main()
     int highest = 0;
 
     // run through 100 generation of networks
-    for(int genNum=0; genNum<100; genNum++){
+    for(int genNum=0; genNum<1; genNum++){
         printf("GEN NUM: %d\n",genNum);
         double scores[genSize];
         #pragma omp parallel
@@ -72,7 +76,7 @@ int main()
     }    
 }
 
-double testNetwork(NeuralNetwork *NN, float data[10000][205])
+double testNetwork(NeuralNetwork *NN, float **data)
 {   // testNetwork takes in a neural network that is meant to generate a set of extracellular voltages
     //  and gives it a score based on how well it blocks APs
     // This is done by having a continuous injected current (to cause APs) and then
@@ -111,7 +115,7 @@ double testNetwork(NeuralNetwork *NN, float data[10000][205])
 
     // Run the trial
     bool firing = false;
-    for (int timeSteps = 0; timeSteps < 10000; timeSteps++)
+    for (int timeSteps = 0; timeSteps < TSTEPS; timeSteps++)
     {
         // calculate the extracellular voltages
         calcFwd(NN);
