@@ -81,8 +81,23 @@ void testEnv(){
 void testFeedback(){
     FBNN* net;
     net = initNet();
+    printf("NET 1\n");
     for(int testNum=0; testNum<10; testNum++){
         float* out = calcOutput(net);
+        printf("OUTPUT %d: %f\n", testNum, out[0]);
+    }
+    FBNN* net2;
+    net2 = initNet();
+    printf("NET 2\n");
+    for(int testNum=0; testNum<10; testNum++){
+        float* out = calcOutput(net2);
+        printf("OUTPUT %d: %f\n", testNum, out[0]);
+    }
+    FBNN* net3;
+    net3 = spawnNet(net, net2);
+    printf("NET 3\n");
+    for(int testNum=0; testNum<10; testNum++){
+        float* out = calcOutput(net3);
         printf("OUTPUT %d: %f\n", testNum, out[0]);
     }
 }

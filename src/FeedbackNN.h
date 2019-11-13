@@ -30,3 +30,4 @@ typedef struct FBNN{
 
 FBNN *initNet();
 float* calcOutput(FBNN* net);
+FBNN *spawnNet(FBNN* p1, FBNN* p2);
