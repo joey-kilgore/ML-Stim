@@ -76,6 +76,52 @@ FBNN *initNet(){
     return net;
 }
 
+void freeFBNN(FBNN* net){
+    Layer* curLayer = net->inputLayer;
+    Layer* nextLayer = curLayer->nextLayer;
+    // free the input layer
+    free(curLayer->node);
+    free(curLayer);
+    
+    // now free the first hidden layer
+    curLayer = nextLayer;
+    nextLayer = curLayer->nextLayer;
+    for(int i=0; i<INPUTS; i++){
+        free(curLayer->weight[i]);   
+    }
+    free(curLayer->weight);
+    free(curLayer->bias);
+    free(curLayer->node);
+    free(curLayer);
+
+    // free the other hidden layers
+    curLayer = nextLayer;
+    nextLayer = curLayer->nextLayer;
+    while(curLayer != net->outputLayer){
+        for(int i=0; i<HIDDEN; i++){
+            free(curLayer->weight[i]);
+        }
+        free(curLayer->weight);
+        free(curLayer->bias);
+        free(curLayer->node);
+        free(curLayer);
+        curLayer = nextLayer;
+        nextLayer = curLayer->nextLayer;
+    }
+
+   // free the output layer
+   for(int i=0; i<HIDDEN; i++){
+        free(curLayer->weight[i]);
+   }
+   free(curLayer->weight);
+   free(curLayer->bias);
+   free(curLayer->node);
+   free(curLayer);
+
+   // finally free the net
+   free(net);
+}
+
 float* calcOutput(FBNN* net){
     // Calculating output for the net
     // Normally an input vector would be passed, but this network
@@ -117,10 +163,10 @@ float* calcOutput(FBNN* net){
     }   
 
     // Move all feedback values up one index and set the last index to the first output of the network
-    for(int i=0; i<INPUTS-1; i++){
+    for(int i=0; i<INPUTS-2; i++){
         net->feedback[i] = net->feedback[i+1];
     }
-    net->feedback[INPUTS-1] = net->outputLayer->node[0];
+    net->feedback[INPUTS-2] = net->outputLayer->node[0];
     return net->outputLayer->node;
 }
 

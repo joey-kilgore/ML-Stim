@@ -61,9 +61,6 @@ void takeTimeStep(struct simEnv sim, float dt, float injected[], int rowNum, flo
         current->h = current->beh;
         data[rowNum][154 + i] = current->h;
     }
-    for(int i=0; i<11; i++){
-        data[rowNum][205+i] = sim.compartments[20+i]->vext;
-    }    
 }
 
 

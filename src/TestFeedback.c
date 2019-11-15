@@ -22,15 +22,33 @@ int main(){
     for(int i=0; i<TSTEPS; i++){
         data[i] = (float *)malloc(205 * sizeof(float));
     }
+    
+    FBNN* net1;
+    net1 = initNet();
+    double score = testFBNN(net1, data);
+    printf("NET 1 SCORE %f\n",score);
 
-    FBNN* net;
-    net = initNet();
-
-    double score = testFBNN(net, data);
-    printf("SCORE %f\n",score);
+    FBNN* net2;
+    net2 = initNet();
+    score = testFBNN(net2, data);
+    printf("NET 2 SCORE %f\n",score);
+    
+    FBNN* net3;
+    net3 = spawnNet(net1, net2);
+    score = testFBNN(net3, data);
+    printf("NET 3 SCORE %f\n",score);
 
     char buf[] = "data.csv";
     writeToFile(data, buf);
+
+    freeFBNN(net1);
+    freeFBNN(net2);
+    freeFBNN(net3);
+
+    for(int i=0; i<TSTEPS;i++){
+        free(data[i]);
+    }
+    free(data);
 }
 
 double testFBNN(FBNN *net, float **data){
@@ -95,16 +113,16 @@ double testFBNN(FBNN *net, float **data){
         }
 
         if(charge<0 && electrode>(charge*-1.0)){   // if there was a negative charge
-            printf("%f,%f\n",charge,electrode);
             score += .01;
         }
         else if(charge>0 && (electrode*-1.0)>charge){
-            printf("%f,%f\n",charge,electrode);
             score += .01;
         }
         charge += electrode;
-        if(timeSteps%100 == 0)
-            printf("%d,%f\n",timeSteps,charge);
+    }
+
+    for(int i=0; i<51; i++){
+        free(env.compartments[i]);
     }
 
     return score;
