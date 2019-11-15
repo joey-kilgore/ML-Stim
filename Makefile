@@ -1,7 +1,9 @@
 CFLAGS = -g -lm -pedantic
 
-all: ./bin/controller.exe ./bin/test.exe ./bin/TestFeedback.exe
+all: ./bin ./bin/controller.exe ./bin/test.exe ./bin/TestFeedback.exe
 	rm *.o
+./bin: 
+	mkdir bin
 
 ./bin/controller.exe: Controller.o Sim.o ML.o -lm
 	gcc -o ./bin/controller.exe -fopenmp Controller.o Sim.o ML.o $(CFLAGS)
