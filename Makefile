@@ -12,10 +12,10 @@ all: ./bin ./bin/controller.exe ./bin/test.exe ./bin/TestFeedback.exe
 	gcc -o ./bin/test.exe test.o Sim.o ML.o FeedbackNN.o $(CFLAGS)
 
 ./bin/TestFeedback.exe: TestFeedback.o Sim.o FeedbackNN.o
-	gcc -o ./bin/TestFeedback.exe TestFeedback.o Sim.o FeedbackNN.o $(CFLAGS)
+	gcc -fopenmp -o ./bin/TestFeedback.exe TestFeedback.o Sim.o FeedbackNN.o $(CFLAGS)
 
 TestFeedback.o: ./src/TestFeedback.c ./src/Sim.h ./src/FeedbackNN.h ./src/defs.h
-	gcc -c ./src/TestFeedback.c $(CFLAGS)
+	gcc -c -fopenmp ./src/TestFeedback.c $(CFLAGS)
 
 test.o: ./src/test.c ./src/Sim.h ./src/defs.h
 	gcc -c ./src/test.c $(CFLAGS)

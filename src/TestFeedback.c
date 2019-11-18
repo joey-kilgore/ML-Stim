@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <omp.h>
 
 double testFBNN(FBNN *net, float **data);
 
@@ -23,28 +24,82 @@ int main(){
         data[i] = (float *)malloc(205 * sizeof(float));
     }
     
-    FBNN* net1;
-    net1 = initNet();
-    double score = testFBNN(net1, data);
-    printf("NET 1 SCORE %f\n",score);
+    // setup initial generation
+    FBNN* gen[GEN_SIZE];
+    for(int i=0; i<GEN_SIZE; i++){
+        gen[i] = initNet();
+    }
 
-    FBNN* net2;
-    net2 = initNet();
-    score = testFBNN(net2, data);
-    printf("NET 2 SCORE %f\n",score);
+    // setup variables needed to track each gen
+    double scores[GEN_SIZE];
+    for(int genNum=0; genNum<NUM_GENS; genNum++){
+        printf("TESTING GEN %d\n",genNum);
+        // test all networks
+        #pragma omp parallel
+        {
+            #pragma omp for
+            for(int i=0; i<GEN_SIZE; i++){
+                printf("TESTING SPECIES %d\n",i);
+                scores[i] = 0;
+                for(int j=0; j<5; j++){
+                    scores[i] += testFBNN(gen[i], data);
+                }
+            }
+        }
+        
+        // find the best 2 scores
+        double s1, s2;
+        int i1, i2;
+        if(scores[0]>scores[1]){
+            s1 = scores[0]; i1 = 0;
+            s2 = scores[1]; i2 = 1;
+        }
+        else{
+            s1 = scores[1]; i1 = 1;
+            s2 = scores[0]; i2 = 0;
+        }
+        for(int i=2; i<GEN_SIZE; i++){
+            if(scores[i]>s1){
+                s2 = s1; i2 = i1;
+                s1 = scores[i]; i1 = i;
+            }
+            else if(scores[i]>s2){
+                s2 = scores[i]; i2 = i;
+            }
+        }
+        
+        printf("BEST SCORES %f, %f\n",s1,s2);
+
+        // move best networks to first two indices
+        FBNN* n1 = gen[i1];
+        FBNN* n2 = gen[i2];
+
+        // free all but the best two networks
+        for(int i=0; i<GEN_SIZE; i++){
+            if(i!=i1 && i!=i2){
+                freeFBNN(gen[i]);
+            }
+        }
+        
+        // move the saved pointers to the best networks into the first two indices
+        gen[0] = n1;
+        gen[1] = n2;
+
+        // make a new generation
+        for(int i=2; i<GEN_SIZE; i++){           
+            gen[i] = spawnNet(gen[0], gen[1]);
+        }
+    }
+    // run the best network one more time
+    double finalScore = testFBNN(gen[0], data);
     
-    FBNN* net3;
-    net3 = spawnNet(net1, net2);
-    score = testFBNN(net3, data);
-    printf("NET 3 SCORE %f\n",score);
-
     char buf[] = "data.csv";
     writeToFile(data, buf);
-
-    freeFBNN(net1);
-    freeFBNN(net2);
-    freeFBNN(net3);
-
+    
+    // free the next gen and data
+    for(int i=0; i<GEN_SIZE; i++){
+        freeFBNN(gen[i]);
+    }
     for(int i=0; i<TSTEPS;i++){
         free(data[i]);
     }
@@ -95,28 +150,28 @@ double testFBNN(FBNN *net, float **data){
         for(int i=0; i<51; i++){
             // calculate extracellular voltage for electrode placed above center node
             // assume nodes are 1mm apart, and the elctrode is 1mm from the axon
-            env.compartments[i]->vext = electrode * extracellular[i] * 50000.0 * 50.0;
+            env.compartments[i]->vext = electrode * extracellular[i] * 50000.0 * 100.0;
         }
 
         // take a single time step (.01ms)
         takeTimeStep(env, .01, inject, timeSteps, data);
 
         // Scoring logic
-        // not blocking an AP is -100 points
-        // equaling charges is +.01 points
+        // not blocking an AP is -10 points
+        // equaling charges is +100 points
         if(!firing && env.compartments[50]->v > 0){
             firing = true;
-            score -= 100;
+            score -= 10;
         }
         else if(firing && env.compartments[50]->v < 0){
             firing = false;
         }
 
         if(charge<0 && electrode>(charge*-1.0)){   // if there was a negative charge
-            score += .01;
+            score += 100;
         }
         else if(charge>0 && (electrode*-1.0)>charge){
-            score += .01;
+            score += 100;
         }
         charge += electrode;
     }

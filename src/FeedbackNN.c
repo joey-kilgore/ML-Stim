@@ -228,6 +228,7 @@ FBNN *spawnNet(FBNN *p1, FBNN *p2){
     net->outputLayer = (Layer *)malloc(sizeof(Layer));
     net->outputLayer->prevLayer = preLayer; // the previous layer is the last hidden layer
     preLayer->nextLayer = net->outputLayer; 
+    net->outputLayer->nextLayer = NULL;
     p1Layer = p1->outputLayer;
     p2Layer = p2->outputLayer;
 
