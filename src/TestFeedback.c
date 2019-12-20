@@ -87,7 +87,15 @@ int main(){
 
         // make a new generation
         for(int i=2; i<GEN_SIZE; i++){           
-            gen[i] = spawnNet(gen[0], gen[1]);
+            if(i < GEN_SIZE/2){
+                gen[i] = spawnNet(gen[0], gen[1]);   
+            }
+            else if(i < GEN_SIZE*3/4){
+                gen[i] = mutateNet(gen[0]);
+            }
+            else{
+                gen[i] = mutateNet(gen[1]);
+            }
         }
     }
     // run the best network one more time
@@ -114,9 +122,9 @@ double testFBNN(FBNN *net, float **data){
         // set initial conditions
         env.compartments[i] = (struct compartment *)malloc(sizeof(struct compartment));
         env.compartments[i]->v = -65.0;
-        env.compartments[i]->m = 0.052;
-        env.compartments[i]->h = 0.596;
-        env.compartments[i]->n = 0.317;
+        env.compartments[i]->m = 0.082;
+        env.compartments[i]->h = 0.444;
+        env.compartments[i]->n = 0.370;
         env.compartments[i]->vext = 0;
     }
     for(int i=0; i<51; i++){
@@ -143,6 +151,8 @@ double testFBNN(FBNN *net, float **data){
     float charge = 0;
     float* output;
     float electrode;
+    float fires = 0.0;
+    float balances = 0.0;
     for(int timeSteps=0; timeSteps<TSTEPS; timeSteps++)
     {   // calculate the stimulus voltage
         output = calcOutput(net);
@@ -157,21 +167,21 @@ double testFBNN(FBNN *net, float **data){
         takeTimeStep(env, .01, inject, timeSteps, data);
 
         // Scoring logic
-        // not blocking an AP is -10 points
-        // equaling charges is +100 points
+        // Blocking and charge balancing are two metrics to optimize
+        // during simulation each is tracked and combined at the final score
         if(!firing && env.compartments[50]->v > 0){
             firing = true;
-            score -= 10;
+            fires += 1.0;
         }
         else if(firing && env.compartments[50]->v < 0){
             firing = false;
         }
 
         if(charge<0 && electrode>(charge*-1.0)){   // if there was a negative charge
-            score += 100;
+            balances += 1.0;
         }
         else if(charge>0 && (electrode*-1.0)>charge){
-            score += 100;
+            balances += 1.0;
         }
         charge += electrode;
     }
@@ -179,6 +189,8 @@ double testFBNN(FBNN *net, float **data){
     for(int i=0; i<51; i++){
         free(env.compartments[i]);
     }
+    // scores = (#blocks * #balances) + (#balances) + (#blocks)
+    score = (MAX_FIRES - fires) * balances + balances + (MAX_FIRES - fires);
 
     return score;
 }

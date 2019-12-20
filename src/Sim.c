@@ -68,7 +68,7 @@ float derivV(float v, float m, float h, float n, float i, float vinCenter, float
 {
     // calculates the voltage derivative given current state values
     //dv/dt=1/cm*(i -          ina                            -       ik                             -     il             +            ileft              +        iright)
-    return (i - 120.0F * powf(m, 3.0F) * h * (v - 55.17F) - 36.0F * powf(n, 4.0F) * (v + 72.14F) - .3F * (v + 49.42F) + (vinLeft - vinCenter) / 1.0F + (vinRight - vinCenter) / 1.0F);
+    return (i - 120.0F * m*m*m * h * (v - 55.17F) - 36.0F * n*n*n*n * (v + 72.14F) - .3F * (v + 49.42F) + (vinLeft - vinCenter) / 1.0F + (vinRight - vinCenter) / 1.0F);
 }
 float derivN(float v, float n)
 {

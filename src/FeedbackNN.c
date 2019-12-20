@@ -255,3 +255,85 @@ FBNN *spawnNet(FBNN *p1, FBNN *p2){
 
     return net;
 }
+
+FBNN *mutateNet(FBNN *p){
+    // mutate net takes a parent networks and generates a new network
+    FBNN* net;
+    net = (FBNN*)malloc(sizeof(FBNN));
+    
+    // Setting up input layer
+    net->inputLayer = (Layer*)malloc(sizeof(Layer));
+    net->inputLayer->node = (float *)malloc(INPUTS * sizeof(float));
+    for(int i=0; i<INPUTS; i++) net->inputLayer->node[i] = 0.0f;
+    net->inputLayer->numNodes = INPUTS;
+
+    // build the hidden layers
+    Layer* preLayer = net->inputLayer;
+    Layer* hiddenLayer;
+    // set trackers for copying data from parents
+    int parentNum = 0;
+    Layer* pLayer = p->inputLayer->nextLayer;
+
+    for(int i=0; i<HIDDEN_LAYERS; i++){
+        Layer* hiddenLayer = (Layer *)malloc(sizeof(Layer));    // allocate layer      
+        hiddenLayer->prevLayer = preLayer; // Set links to connect layers
+        preLayer->nextLayer = hiddenLayer;
+
+        // Allocate float arrays
+        // we will randomly choose connections from each parent such that
+        // there is no cross between feeding into each each node (ie we will copy all weights
+        //  leading INTO a node) and then randomly choose which parent we copy from
+        hiddenLayer->weight = malloc(preLayer->numNodes * sizeof(float *));
+        hiddenLayer->bias = (float *)malloc(HIDDEN * sizeof(float *));
+
+        for(int j=0; j<preLayer->numNodes; j++){
+            hiddenLayer->weight[j] = (float *)malloc(HIDDEN * sizeof(float));
+        }
+        for(int j=0; j<HIDDEN; j++){
+            parentNum = rand()%2+1;
+            for(int l=0; l<preLayer->numNodes; l++){
+                hiddenLayer->weight[l][j] = pLayer->weight[l][j] + gaussGenerator();
+            }
+            hiddenLayer->bias[j] = pLayer->bias[j] + gaussGenerator();
+        }
+       
+        // allocate nodes
+        hiddenLayer->node = (float *)malloc(HIDDEN * sizeof(float));
+
+        // set numNodes
+        hiddenLayer->numNodes = HIDDEN;
+        
+        // move to the next layer
+        preLayer = hiddenLayer;
+        pLayer = pLayer->nextLayer;
+    }
+
+    // Setup the output layer
+    net->outputLayer = (Layer *)malloc(sizeof(Layer));
+    net->outputLayer->prevLayer = preLayer; // the previous layer is the last hidden layer
+    preLayer->nextLayer = net->outputLayer; 
+    net->outputLayer->nextLayer = NULL;
+    pLayer = p->outputLayer;
+    
+    // allocate weight and bias and set values
+    net->outputLayer->weight = (float **)malloc(HIDDEN * sizeof(float *));
+    net->outputLayer->bias = (float *)malloc(OUTPUTS * sizeof(float));
+    for(int i=0; i<HIDDEN; i++){
+        net->outputLayer->weight[i] = (float *)malloc(OUTPUTS * sizeof(float));
+    }
+    for(int i=0; i<OUTPUTS; i++){
+        for(int j=0; j<HIDDEN; j++){       
+            net->outputLayer->weight[j][i] = pLayer->weight[j][i] + gaussGenerator();
+        }
+        net->outputLayer->bias[i] = pLayer->bias[i] + gaussGenerator();
+    }
+    
+    net->outputLayer->node = (float *)malloc(OUTPUTS * sizeof(float));
+    net->outputLayer->numNodes = OUTPUTS;
+
+    // set the feedback values to 0
+    for(int i=0; i<INPUTS-1; i++)
+        net->feedback[i] = 0.0f;
+
+    return net;
+}

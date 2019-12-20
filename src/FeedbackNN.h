@@ -32,3 +32,4 @@ FBNN *initNet();
 void freeFBNN(FBNN* net);
 float* calcOutput(FBNN* net);
 FBNN *spawnNet(FBNN* p1, FBNN* p2);
+FBNN *mutateNet(FBNN* p);
