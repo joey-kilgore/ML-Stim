@@ -60,3 +60,6 @@ dkms.conf
 
 # RStudio files
 .Rproj.user/
+
+# R Data folders
+R/Sims/
