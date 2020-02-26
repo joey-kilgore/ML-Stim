@@ -1,8 +1,8 @@
+#pragma once
 #include <math.h>
 #include <time.h>
 #include <stdio.h>
-
-#define PI 3.141592654f
+#include "MathUtil.h"
 
 float linearGenerator(){
     // return a float between -1 and 1 with a linear distrubution
@@ -16,6 +16,12 @@ float fastSigmoid(float x){
     return x;
 }
 
+float fastSigmoidBounded(float x, float lowerBound, float upperBound){
+    // use sigmoid activation to scale x between lower and upper bounds
+    // see fastSigmoid for reason of calculation
+    return (upperBound-lowerBound) * x / (1.0f + fabs(x)) + lowerBound;
+}
+
 float gaussGenerator(){
     // return a float with a gaussian distribution
     float u, v, z;
@@ -23,4 +29,10 @@ float gaussGenerator(){
     v = rand() / (RAND_MAX + 1.0f);
     z = sqrt(-2.0f * log(u)) * sin(2 * PI * v);
     return z;
+}
+
+float gaussActivation(float x){
+    // returns the gaussian activation function of a float
+    // g(x) = e^(-x^2)
+    return powf(e, -1.0f*x*x);
 }

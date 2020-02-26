@@ -1,11 +1,12 @@
 CFLAGS = -g -lm -pedantic
 
-all: ./bin ./bin/controller.exe ./bin/test.exe ./bin/TestFeedback.exe
+all: ./bin ./bin/controller.exe ./bin/test.exe ./bin/TestFeedback.exe ./bin/PulseModulation.exe
 	rm *.o
+
 ./bin: 
 	mkdir bin
 
-./bin/controller.exe: Controller.o Sim.o ML.o -lm
+./bin/controller.exe: Controller.o Sim.o ML.o
 	gcc -o ./bin/controller.exe -fopenmp Controller.o Sim.o ML.o $(CFLAGS)
 
 ./bin/test.exe: test.o Sim.o ML.o FeedbackNN.o
@@ -13,6 +14,12 @@ all: ./bin ./bin/controller.exe ./bin/test.exe ./bin/TestFeedback.exe
 
 ./bin/TestFeedback.exe: TestFeedback.o Sim.o FeedbackNN.o
 	gcc -fopenmp -o ./bin/TestFeedback.exe TestFeedback.o Sim.o FeedbackNN.o $(CFLAGS)
+
+./bin/PulseModulation.exe: PulseModulation.o Sim.o FeedbackNN.o
+	gcc -fopenmp -o ./bin/PulseModulation.exe PulseModulation.o Sim.o FeedbackNN.o $(CFLAGS)
+
+PulseModulation.o: ./src/PulseModulation.c ./src/Sim.h ./src/FeedbackNN.h ./src/defs.h ./src/MathUtil.c
+	gcc -c -fopenmp ./src/PulseModulation.c $(CFLAGS)
 
 TestFeedback.o: ./src/TestFeedback.c ./src/Sim.h ./src/FeedbackNN.h ./src/defs.h
 	gcc -c -fopenmp ./src/TestFeedback.c $(CFLAGS)
